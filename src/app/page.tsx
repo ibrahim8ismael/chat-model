@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Textarea from "@/components/chat/Textarea";
 import UserMessage from '@/components/chat/UserMessage';
 import AgentMessage from '@/components/chat/AgentMessage';
@@ -9,25 +9,50 @@ import AgentMessage from '@/components/chat/AgentMessage';
 interface Message {
   text: string;
   sender: 'user' | 'agent';
-  isLoading?: boolean; // To show a typing indicator
 }
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const typeMessage = (fullText: string, messageIndex: number) => {
+    let i = 0;
+    // Clear any existing interval to prevent overlapping typing effects
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+
+    typingIntervalRef.current = setInterval(() => {
+      setMessages(prevMessages => {
+        const newMessages = [...prevMessages];
+        if (newMessages[messageIndex]) {
+          newMessages[messageIndex].text = fullText.substring(0, i);
+        }
+        return newMessages;
+      });
+
+      if (i < fullText.length) {
+        i++;
+      } else {
+        clearInterval(typingIntervalRef.current!); // Clear when done
+        typingIntervalRef.current = null;
+      }
+    }, 20); // Typing speed (milliseconds per character)
+  };
 
   const handleSendMessage = async (text: string) => {
-    // Add user message to the state
+    // 1. Add user message and an empty agent message to the state
     const userMessage: Message = { text, sender: 'user' };
-    setMessages(prevMessages => [...prevMessages, userMessage]);
+    const agentMessage: Message = { text: '', sender: 'agent' };
+    setMessages(prevMessages => [...prevMessages, userMessage, agentMessage]);
 
-    // Add a loading indicator for the agent's response
-    const loadingMessage: Message = { text: '...', sender: 'agent', isLoading: true };
-    setMessages(prevMessages => [...prevMessages, loadingMessage]);
+    // Get the index of the agent's message (which is the last one added)
+    const agentMessageIndex = messages.length + 1; 
 
-    let errorOccurred = false;
-    let errorMessage = 'Sorry, something went wrong.';
+    let accumulatedText = ''; // To build the full response for the typewriter effect
 
     try {
+      // 2. Make the API call
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -36,33 +61,39 @@ export default function Home() {
         body: JSON.stringify({ message: text }),
       });
 
-      const data = await response.json();
+      // 3. Handle errors from the API
+      if (!response.ok || !response.body) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'An unknown error occurred.');
+      }
 
-      if (!response.ok) {
-        errorOccurred = true;
-        errorMessage = data.error?.message || 'API request failed with no specific error message.';
-      } else {
-        // Replace the loading message with the actual response
-        setMessages(prevMessages => {
-          const newMessages = [...prevMessages];
-          const lastMessageIndex = newMessages.length - 1;
-          newMessages[lastMessageIndex] = { text: data.text, sender: 'agent' };
-          return newMessages;
-        });
+      // 4. Process the stream
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        const chunk = decoder.decode(value, { stream: true });
+        accumulatedText += chunk;
+        typeMessage(accumulatedText, agentMessageIndex);
       }
 
     } catch (error: unknown) {
       console.error("Failed to get agent's response:", error);
-      errorOccurred = true;
-      errorMessage = error instanceof Error ? error.message : 'An unknown error occurred while fetching.';
-    }
-
-    if (errorOccurred) {
-      // Replace the loading message with an error message
+      // Clear any ongoing typing effect
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+        typingIntervalRef.current = null;
+      }
+      // Update the agent's message with the error
       setMessages(prevMessages => {
         const newMessages = [...prevMessages];
-        const lastMessageIndex = newMessages.length - 1;
-        newMessages[lastMessageIndex] = { text: `Error: ${errorMessage}`, sender: 'agent' };
+        if (newMessages[agentMessageIndex]) {
+          const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+          newMessages[agentMessageIndex].text = `Error: ${errorMessage}`;
+        }
         return newMessages;
       });
     }
@@ -90,7 +121,7 @@ export default function Home() {
                   {msg.sender === 'user' ? (
                     <UserMessage text={msg.text} />
                   ) : (
-                    <AgentMessage text={msg.text} isLoading={msg.isLoading} />
+                    <AgentMessage text={msg.text} />
                   )}
                 </div>
               ))}
