@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Textarea from "@/components/chat/Textarea";
-import Logo from '@/components/ui/Logo';
+import UserMessage from '@/components/chat/UserMessage';
+import AgentMessage from '@/components/chat/AgentMessage';
 
 // Define a type for a single message
 interface Message {
@@ -40,12 +41,14 @@ export default function Home() {
         // Chat view layout
         <>
           <main className="flex-1 overflow-y-auto p-4">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-8 py-4">
               {messages.map((msg, index) => (
-                <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`p-3 rounded-lg max-w-lg ${msg.sender === 'user' ? 'bg-blue-600' : 'bg-zinc-700'}`}>
-                    {msg.text}
-                  </div>
+                <div key={index}>
+                  {msg.sender === 'user' ? (
+                    <UserMessage text={msg.text} />
+                  ) : (
+                    <AgentMessage text={msg.text} />
+                  )}
                 </div>
               ))}
             </div>

@@ -12,7 +12,9 @@ interface TextareaProps {
 
 export default function Textarea({ className, onSendMessage }: TextareaProps) {
     const [value, setValue] = useState('');
+    const [isMultiline, setIsMultiline] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const singleRowHeight = useRef(0);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setValue(e.target.value);
@@ -23,6 +25,7 @@ export default function Textarea({ className, onSendMessage }: TextareaProps) {
         if (value.trim()) {
             onSendMessage(value.trim());
             setValue('');
+            setIsMultiline(false); // Reset on send
         }
     };
 
@@ -35,8 +38,20 @@ export default function Textarea({ className, onSendMessage }: TextareaProps) {
 
     useEffect(() => {
         if (textareaRef.current) {
+            // Capture the height of a single row on the first render
+            if (singleRowHeight.current === 0 && value === '') {
+                singleRowHeight.current = textareaRef.current.scrollHeight;
+            }
+
+            // Reset height to calculate the new scrollHeight
             textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+            const newScrollHeight = textareaRef.current.scrollHeight;
+
+            // Check if the content is taller than a single line
+            setIsMultiline(newScrollHeight > singleRowHeight.current);
+
+            // Set the new height
+            textareaRef.current.style.height = `${newScrollHeight}px`;
         }
     }, [value]);
 
@@ -48,7 +63,11 @@ export default function Textarea({ className, onSendMessage }: TextareaProps) {
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Message Notiva..."
-                className="w-full p-4 pl-6 pr-16 bg-zinc-900 rounded-full text-white resize-none focus:outline-none transition-all duration-200"
+                className={cn(
+                    "w-full p-4 pl-6 pr-16 bg-zinc-900 text-white resize-none focus:outline-none transition-all duration-200",
+                    "max-h-48 overflow-y-auto", // Add max-height and scroll
+                    isMultiline ? "rounded-4xl" : "rounded-full" // Dynamic border radius
+                )}
                 rows={1}
             />
             <Button 
