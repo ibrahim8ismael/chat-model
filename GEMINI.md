@@ -1,0 +1,49 @@
+# GEMINI
+project_name: Notiva
+description: |
+  Notiva is a smart chat-based SaaS app built with Next.js 15, MongoDB, and MCP.
+  The MVP allows users to chat naturally (in Arabic or English) to create, view, and manage calendar events.
+
+goals:
+  - Build a chat-based interface for managing meetings and reminders.
+  - Integrate MCP for smart tool handling (Google Calendar integration).
+  - Support bilingual input (Arabic and English).
+  - Use MongoDB for storing users, auth sessions, and app data.
+  - Keep UI minimal and clean (ChatGPT-style).
+
+stack:
+  frontend: Next.js 15 (App Router, TypeScript, Tailwind CSS)
+  backend: Next.js API Routes (MCP integration, REST endpoints)
+  database: MongoDB (via Mongoose)
+  auth: NextAuth.js (Google + Credentials)
+  ai: OpenAI GPT + MCP tools
+  hosting: Vercel (frontend) / Mongo Atlas (DB)
+
+architecture_rules:
+  - Use modular folder structure inside `/app` for routes and API logic.
+  - Keep all MCP tools inside `/app/api/mcp/`.
+  - Store all Mongo models in `/models`.
+  - Store helper functions in `/lib`.
+  - Avoid inline styles — use Tailwind utilities.
+  - Use server actions where needed instead of heavy API calls.
+  - Keep chat UI responsive and simple like ChatGPT.
+  - Use TypeScript types across all backend and frontend files.
+
+naming_conventions:
+  components: PascalCase
+  utils_and_libs: camelCase
+  api_routes: kebab-case
+  db_collections: lowercase_plural (e.g. users, sessions)
+  files: kebab-case
+  env_vars: UPPER_SNAKE_CASE
+
+ai_guidelines:
+  - Prioritize clarity over cleverness in code.
+  - Keep prompts short and context-aware.
+  - Generate bilingual system messages when user language is ambiguous.
+  - Use comments to clarify logic, not to restate code.
+
+collaboration_style:
+  - Use concise commit messages (e.g. feat: add chat input UI)
+  - Avoid magic numbers or hardcoded strings.
+  - Keep everything production-safe and scalable for SaaS usage.
