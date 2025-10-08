@@ -9,20 +9,63 @@ import AgentMessage from '@/components/chat/AgentMessage';
 interface Message {
   text: string;
   sender: 'user' | 'agent';
+  isLoading?: boolean; // To show a typing indicator
 }
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = async (text: string) => {
     // Add user message to the state
-    setMessages(prevMessages => [...prevMessages, { text, sender: 'user' }]);
-    
-    // Here you would typically call an API to get the agent's response
-    // For now, we can simulate a response
-    setTimeout(() => {
-      setMessages(prevMessages => [...prevMessages, { text: `Echo: ${text}`, sender: 'agent' }]);
-    }, 1000);
+    const userMessage: Message = { text, sender: 'user' };
+    setMessages(prevMessages => [...prevMessages, userMessage]);
+
+    // Add a loading indicator for the agent's response
+    const loadingMessage: Message = { text: '...', sender: 'agent', isLoading: true };
+    setMessages(prevMessages => [...prevMessages, loadingMessage]);
+
+    let errorOccurred = false;
+    let errorMessage = 'Sorry, something went wrong.';
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: text }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        errorOccurred = true;
+        errorMessage = data.error?.message || 'API request failed with no specific error message.';
+      } else {
+        // Replace the loading message with the actual response
+        setMessages(prevMessages => {
+          const newMessages = [...prevMessages];
+          const lastMessageIndex = newMessages.length - 1;
+          newMessages[lastMessageIndex] = { text: data.text, sender: 'agent' };
+          return newMessages;
+        });
+      }
+
+    } catch (error: unknown) {
+      console.error("Failed to get agent's response:", error);
+      errorOccurred = true;
+      errorMessage = error instanceof Error ? error.message : 'An unknown error occurred while fetching.';
+    }
+
+    if (errorOccurred) {
+      // Replace the loading message with an error message
+      setMessages(prevMessages => {
+        const newMessages = [...prevMessages];
+        const lastMessageIndex = newMessages.length - 1;
+        newMessages[lastMessageIndex] = { text: `Error: ${errorMessage}`, sender: 'agent' };
+        return newMessages;
+      });
+    }
   };
 
   return (
@@ -47,7 +90,7 @@ export default function Home() {
                   {msg.sender === 'user' ? (
                     <UserMessage text={msg.text} />
                   ) : (
-                    <AgentMessage text={msg.text} />
+                    <AgentMessage text={msg.text} isLoading={msg.isLoading} />
                   )}
                 </div>
               ))}
