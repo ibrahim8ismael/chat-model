@@ -4,6 +4,8 @@ import { useState, useRef } from 'react';
 import Textarea from "@/components/chat/Textarea";
 import UserMessage from '@/components/chat/UserMessage';
 import AgentMessage from '@/components/chat/AgentMessage';
+import { useSession, signIn } from 'next-auth/react';
+import Button from '@/components/ui/Button';
 
 // Define a type for a single message
 interface Message {
@@ -12,6 +14,7 @@ interface Message {
 }
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -98,6 +101,23 @@ export default function Home() {
       });
     }
   };
+
+  if (status === "loading") {
+    return (
+      <div className="flex flex-col h-screen bg-zinc-800 text-white items-center justify-center">
+        <p>Loading authentication...</p>
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <div className="flex flex-col h-screen bg-zinc-800 text-white items-center justify-center">
+        <p className="mb-4 text-xl">Please sign in to use the chat.</p>
+        <Button onClick={() => signIn("google")}>Sign in with Google</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-zinc-800 text-white">

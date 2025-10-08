@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import Logo from "../ui/Logo";
 import Button from "../ui/Button";
 import { ChevronsLeft } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
 
 interface SidenavProps {
     isOpen: boolean;
@@ -12,6 +13,8 @@ export default function Sidenav({
     isOpen,
     setIsOpen
 }: SidenavProps) {
+    const { data: session, status } = useSession();
+
     return (
         <div
             className={cn(
@@ -21,11 +24,11 @@ export default function Sidenav({
             )}
         >
             <div className={cn("p-4 flex items-center relative", isOpen ? "justify-between" : "justify-center")}>
-                <Logo view={isOpen ? "logo" : "logo"} size={isOpen ? 'sm' : 'sm'} />
+                <Logo view={isOpen ? "txt" : "logo"} size={isOpen ? 'md' : 'sm'} />
                 <Button 
                     onClick={() => setIsOpen(!isOpen)} 
-                    variant="icon" 
-                    rounded="full"
+                    variant="secondary" 
+                    isSquare
                     className={cn(
                         "transition-opacity z-10 bg-zinc-900", 
                         isOpen 
@@ -35,6 +38,14 @@ export default function Sidenav({
                 >
                     <ChevronsLeft className={cn("transition-transform", isOpen ? "" : "rotate-180")} />
                 </Button>
+            </div>
+
+            <div className="flex-1 flex flex-col justify-end p-4">
+                {status === "authenticated" && isOpen && (
+                    <Button onClick={() => signOut()} variant="secondary" className="w-full">
+                        Sign Out
+                    </Button>
+                )}
             </div>
         </div>
     );

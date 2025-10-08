@@ -7,6 +7,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     rounded?: 'small' | 'medium' | 'large' | 'full';
     children: React.ReactNode;
     className?: string;
+    isSquare?: boolean; // Add this back
 }
 
 export function Button({
@@ -15,6 +16,7 @@ export function Button({
     rounded = 'small',
     children,
     className = '',
+    isSquare = false, // Destructure it here
     ...props
 }: ButtonProps) {
     const baseStyles = "inline-block font-bold transition-all duration-300 ease-in-out text-center font-pixels";
