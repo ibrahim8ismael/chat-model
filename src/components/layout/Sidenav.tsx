@@ -24,10 +24,10 @@ export default function Sidenav({
                 <Logo view={isOpen ? "logo" : "logo"} size={isOpen ? 'sm' : 'sm'} />
                 <Button 
                     onClick={() => setIsOpen(!isOpen)} 
-                    variant="secondary" 
-                    isSquare
+                    variant="icon" 
+                    rounded="full"
                     className={cn(
-                        "transition-opacity z-10 bg-zinc-800", 
+                        "transition-opacity z-10 bg-zinc-900", 
                         isOpen 
                             ? "opacity-100"
                             : "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100"

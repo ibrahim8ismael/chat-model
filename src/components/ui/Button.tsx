@@ -2,12 +2,11 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'icon';
+    variant?: 'primary' | 'secondary' | 'icon' | 'send';
     size?: 'xsmall' | 'small' | 'medium' | 'large';
     rounded?: 'small' | 'medium' | 'large' | 'full';
     children: React.ReactNode;
     className?: string;
-    isSquare?: boolean; // New prop for square buttons
 }
 
 export function Button({
@@ -16,7 +15,6 @@ export function Button({
     rounded = 'small',
     children,
     className = '',
-    isSquare = false,
     ...props
 }: ButtonProps) {
     const baseStyles = "inline-block font-bold transition-all duration-300 ease-in-out text-center font-pixels";
@@ -47,7 +45,12 @@ export function Button({
             active: ""
         },
         icon: {
-            base: "text-zinc-500 cursor-pointer",
+            base: "text-zinc-500 cursor-pointer w-10 h-10 p-0 flex items-center justify-center",
+            hover: "",
+            active: ""
+        },
+        send: {
+            base: "text-zinc-600 w-10 h-10 p-0 flex items-center justify-center",
             hover: "",
             active: ""
         }
@@ -60,12 +63,11 @@ export function Button({
     // Use cn utility to properly merge classes, allowing className to override defaults
     const buttonStyles = cn(
         baseStyles,
-        !isSquare && sizes[size],
+        sizes[size],
         selectedVariant.base,
         selectedVariant.hover,
         selectedVariant.active,
         roundedStyles[rounded],
-        isSquare && "w-8 h-8 p-0 flex items-center justify-center", // Square styles
         className
     );
 
