@@ -10,8 +10,12 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/mongoose": "^5.11.96",
+    "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
     "lucide-react": "^0.545.0",
+    "mongoose": "^8.19.1",
     "next": "15.5.4",
     "next-auth": "^4.24.11",
     "react": "19.1.0",
