@@ -13,7 +13,7 @@ export default function Sidenav({
     isOpen,
     setIsOpen
 }: SidenavProps) {
-    const { data: session, status } = useSession();
+    const { status } = useSession();
 
     return (
         <div
