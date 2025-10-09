@@ -4,6 +4,7 @@ import "./globals.css";
 import { useState } from "react";
 import Sidenav from "@/components/layout/Sidenav";
 import { cn } from "@/lib/utils";
+import { SessionProvider } from "next-auth/react";
 
 export default function RootLayout({
   children,
@@ -14,9 +15,13 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className={cn("transition-all duration-300", isOpen ? "pl-64" : "pl-16")}>
-        <Sidenav isOpen={isOpen} setIsOpen={setIsOpen} />
-        {children}
+      <body>
+        <SessionProvider>
+          <Sidenav isOpen={isOpen} setIsOpen={setIsOpen} />
+          <div className={cn("transition-all duration-300", isOpen ? "pl-64" : "pl-16")}>
+            {children}
+          </div>
+        </SessionProvider>
       </body>
     </html>
   );

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Textarea from "@/components/chat/Textarea";
 import UserMessage from '@/components/chat/UserMessage';
 import AgentMessage from '@/components/chat/AgentMessage';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 // Define a type for a single message
 interface Message {
@@ -12,8 +14,16 @@ interface Message {
 }
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/signin');
+    }
+  }, [status, router]);
 
   const typeMessage = (fullText: string, messageIndex: number) => {
     let i = 0;
@@ -98,6 +108,14 @@ export default function Home() {
       });
     }
   };
+
+  if (status === "loading" || status === "unauthenticated") {
+    return (
+      <div className="flex flex-col h-screen bg-zinc-800 text-white items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-zinc-800 text-white">
