@@ -15,6 +15,12 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
+  age: {
+    type: Number,
+  },
+  address: {
+    type: String,
+  },
 }, { timestamps: true });
 
 const User = models.User || model('User', UserSchema);

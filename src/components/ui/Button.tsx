@@ -16,6 +16,7 @@ export function Button({
     rounded = 'small',
     children,
     className = '',
+    isSquare,
     ...props
 }: ButtonProps) {
     const baseStyles = "inline-block font-bold transition-all duration-300 ease-in-out text-center font-pixels";
